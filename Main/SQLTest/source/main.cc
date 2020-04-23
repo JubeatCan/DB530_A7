@@ -164,6 +164,10 @@ int main (int numArgs, char **args) {
 
 						// print it out
 						final->printSFWQuery ();
+
+						// Build and Optimize the query
+						
+						
 					}
 
 					// get outta here
