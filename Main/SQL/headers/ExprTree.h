@@ -102,7 +102,7 @@ public:
 	};
 
 	string getType() {
-		return "number";
+		return "double";
 	}
 
 	pair<string, MyDB_AttTypePtr> getAttSchema () {
@@ -132,7 +132,7 @@ public:
 	};
 
 	string getType() {
-		return "number";
+		return "int";
 	}
 
 	pair<string, MyDB_AttTypePtr> getAttSchema () {
@@ -232,8 +232,10 @@ public:
 		}
 		if (attType == "bool")
 			return "boolean";
-		if (attType == "int" || attType == "double")
-			return "number";
+		if (attType == "int")
+			return "int";
+		if (attType == "double")
+		    return "double"
 		if (attType == "string")
 			return "string";
 		return "(Unable to recognize this type)";
@@ -279,7 +281,7 @@ public:
 	        return false;
 	    }
 
-	    if (!checkTypeEqual(lhs, rhs, "number")) {
+	    if (!checkTypeEqual(lhs, rhs, "double") || !checkTypeEqual(lhs, rhs, "int") ) {
 	        errorMessage(lhs, rhs, "-");
 	        return false;
 	    }
@@ -291,9 +293,14 @@ public:
 	}
 
 	string getType() {
-	    if (checkTypeEqual(lhs, rhs, "number")) {
-	        return "number";
+	    if (checkTypeEqual(lhs, rhs, "double")) {
+	        return "double";
 	    }
+
+        if (checkTypeEqual(lhs, rhs, "int")) {
+            return "int";
+        }
+
 		return "(Unable to recognize this type)";
 	}
 
@@ -323,7 +330,8 @@ public:
             return false;
         }
 
-        if (!checkTypeEqual(lhs, rhs, "number") && !checkTypeEqual(lhs, rhs, "string")) {
+        if (!checkTypeEqual(lhs, rhs, "int") && !checkTypeEqual(lhs, rhs, "double")
+        && !checkTypeEqual(lhs, rhs, "string")) {
             errorMessage(lhs, rhs, "+");
             return false;
         }
@@ -335,9 +343,14 @@ public:
 	}
 
 	string getType() {
-        if (checkTypeEqual(lhs, rhs, "number")) {
-            return "number";
+        if (checkTypeEqual(lhs, rhs, "int")) {
+            return "int";
         }
+
+        if (checkTypeEqual(lhs, rhs, "double")) {
+            return "double";
+        }
+
         if (checkTypeEqual(lhs, rhs, "string")) {
             return "string";
         }
@@ -370,7 +383,7 @@ public:
             return false;
         }
 
-        if (!checkTypeEqual(lhs, rhs, "number")) {
+        if (!checkTypeEqual(lhs, rhs, "double") || !checkTypeEqual(lhs, rhs, "int")) {
             errorMessage(lhs, rhs, "*");
             return false;
         }
@@ -382,8 +395,12 @@ public:
 	}
 
 	string getType() {
-        if (checkTypeEqual(lhs, rhs, "number")) {
-            return "number";
+        if (checkTypeEqual(lhs, rhs, "double")) {
+            return "double";
+        }
+
+        if (checkTypeEqual(lhs, rhs, "int")) {
+            return "int";
         }
         return "(Unable to recognize this type)";
 	}
@@ -414,7 +431,7 @@ public:
             return false;
         }
 
-        if (!checkTypeEqual(lhs, rhs, "number")) {
+        if (!checkTypeEqual(lhs, rhs, "double") || !checkTypeEqual(lhs, rhs, "int")) {
             errorMessage(lhs, rhs, "/");
             return false;
         }
@@ -423,9 +440,14 @@ public:
 	};
 
 	string getType() {
-        if (checkTypeEqual(lhs, rhs, "number")) {
-            return "number";
+        if (checkTypeEqual(lhs, rhs, "double")) {
+            return "double";
         }
+
+        if (checkTypeEqual(lhs, rhs, "int")) {
+            return "int";
+        }
+
         return "(Unable to recognize this type)";
 	}
 	pair<string, MyDB_AttTypePtr> getAttSchema () {
@@ -458,7 +480,8 @@ public:
 			return false;
 		}
 
-		if (!checkTypeEqual(lhs, rhs, "number") && !checkTypeEqual(lhs, rhs, "string")) {
+		if (!checkTypeEqual(lhs, rhs, "double") && !checkTypeEqual(lhs, rhs, "int") &&
+		!checkTypeEqual(lhs, rhs, "string")) {
 			errorMessage(lhs, rhs, ">");
 			return false;
 		}
@@ -471,7 +494,8 @@ public:
 	}
 
 	string getType() {
-		if (checkTypeEqual(lhs, rhs, "number") || checkTypeEqual(lhs, rhs, "string")) {
+		if (checkTypeEqual(lhs, rhs, "int") || checkTypeEqual(lhs, rhs, "double")
+		|| checkTypeEqual(lhs, rhs, "string")) {
 			return "boolean";
 		}
 		return "(Unable to recognize this type)";
@@ -503,7 +527,8 @@ public:
 			return false;
 		}
 
-		if (!checkTypeEqual(lhs, rhs, "number") && !checkTypeEqual(lhs, rhs, "string")) {
+        if (!checkTypeEqual(lhs, rhs, "double") && !checkTypeEqual(lhs, rhs, "int") &&
+            !checkTypeEqual(lhs, rhs, "string")) {
 			errorMessage(lhs, rhs, "<");
 			return false;
 		}
@@ -516,7 +541,8 @@ public:
 	}
 
 	string getType() {
-		if (checkTypeEqual(lhs, rhs, "number") || checkTypeEqual(lhs, rhs, "string")) {
+        if (checkTypeEqual(lhs, rhs, "int") || checkTypeEqual(lhs, rhs, "double")
+            || checkTypeEqual(lhs, rhs, "string")) {
 			return "boolean";
 		}
 		return "(Unable to recognize this type)";
@@ -723,7 +749,7 @@ public:
 		if (!child->check()) {
 			return false;
 		}
-		if (!checkTypeEqual(child, "number")) {
+		if (!(checkTypeEqual(child, "int") || checkTypeEqual(child, "double"))) {
 			errorMessage(child, "SUM");
 			return false;
 		}
@@ -732,9 +758,13 @@ public:
 	};
 
 	string getType() {
-		if (checkTypeEqual(child, "number")) {
-			return "number";
+		if (checkTypeEqual(child, "int")) {
+			return "int";
 		}
+        if (checkTypeEqual(child, "double")) {
+            return "double";
+        }
+
 		return "(Unable to recognize this type)";
 	}
 
@@ -765,7 +795,7 @@ public:
 		if (!child->check()) {
 			return false;
 		}
-		if (!checkTypeEqual(child, "number")) {
+        if (!(checkTypeEqual(child, "int") || checkTypeEqual(child, "double"))) {
 			errorMessage(child, "SUM");
 			return false;
 		}
@@ -774,9 +804,13 @@ public:
 	};
 
 	string getType() {
-		if (checkTypeEqual(child, "number")) {
-			return "number";
+		if (checkTypeEqual(child, "int")) {
+			return "int";
 		}
+        if (checkTypeEqual(child, "double")) {
+            return "double";
+        }
+
 		return "(Unable to recognize this type)";
 	}
 
