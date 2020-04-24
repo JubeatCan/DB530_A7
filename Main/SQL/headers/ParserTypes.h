@@ -266,7 +266,7 @@ public:
 		for (auto t : tablesToProcess) {
 			if (s_tables.find(t.first) == s_tables.end()) {
 				cerr << "Cannot find table: " << t.first << endl;
-				return false;
+				// return false;
 			}
 		}
 
@@ -275,7 +275,7 @@ public:
 			for (auto v : valuesToSelect) {
 				if (!v->check()) {
 					cerr << "Something about select triggers errors." << endl;
-					return false;
+					// return false;
 				}
 			}
 		} else {
@@ -283,14 +283,14 @@ public:
 			for (auto g : groupingClauses) {
 				if (!g->check()) {
 					cerr << "Something about grouping triggers errors." << endl;
-					return false;
+					// return false;
 				}
 				s_group.insert(g->toString());
 			}
 			for (auto v : valuesToSelect) {
 				if (!v->check()) {
 					cerr << "Something about select triggers errors." << endl;
-					return false;
+					// return false;
 				}
 			}
 			for (auto v : valuesToSelect) {
@@ -299,7 +299,7 @@ public:
 				}
 				if (s_group.find(v->toString()) == s_group.end()) {
 					cerr << "Cannot match select " << v->toString() << " with grouping." << endl;
-					return false;
+					// return false;
 				}
 			}
 		}
@@ -308,7 +308,7 @@ public:
 		for (auto d : allDisjunctions) {
 			if (!d->check()) {
 				cerr << "Something about disjunctions triggers errors." << endl;
-				return false;
+				// return false;
 			}
 		}
 

@@ -50,7 +50,7 @@ void RunOp::run() {
     MyDB_TableReaderWriterPtr output = make_shared<MyDB_TableReaderWriter>(outputTable, buffer);
     if (tablesToProcess.size() != 1) {
         // TODO: join and result in finalInput.
-
+        cout << "Join and process" << endl;
     } else {
 
         input = tables[tablesToProcess[0].first];
