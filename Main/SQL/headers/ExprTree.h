@@ -331,7 +331,7 @@ public:
 		return true;
 	};
 	pair<string, MyDB_AttTypePtr> getAttSchema () {
-		return lhs->getAttSchema();
+		return make_pair("", make_shared<MyDB_DoubleAttType>());
 	}
 
 	string getType() {
