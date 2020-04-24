@@ -37,6 +37,26 @@ public:
 		return (lhs->getType() == type && rhs->getType() == type) ? true : false;
 	}
 
+	bool checkNumberTypeEqual(ExprTreePtr lhs, ExprTreePtr rhs) {
+	    return (lhs->getType() == "double" && rhs->getType() == 'int') ||
+                (lhs->getType() == "int" && rhs->getType() == 'double')
+    }
+
+    bool checkNumberStringMatch(ExprTreePtr lhs, ExprTreePtr rhs) {
+	    if(lhs->getType() == "string") {
+	        if(rhs->getType() == "double" || rhs->getType == "int"){
+	            return true;
+	        }
+	    }
+	    if(rhs->getType() == "string") {
+            if(lhs->getType() == "double" || lhs->getType == "int"){
+                return true;
+            }
+	    }
+	    return false;
+	}
+
+
 	bool checkTypeEqual(ExprTreePtr opn, string type) {
 		return (opn->getType() == type) ? true : false;
 	}
@@ -281,7 +301,9 @@ public:
 	        return false;
 	    }
 
-	    if (!checkTypeEqual(lhs, rhs, "double") || !checkTypeEqual(lhs, rhs, "int") ) {
+	    if (!checkTypeEqual(lhs, rhs, "double")
+	    || !checkTypeEqual(lhs, rhs, "int")
+	    || !checkNumberTypeEqual(lhs, rhs)) {
 	        errorMessage(lhs, rhs, "-");
 	        return false;
 	    }
@@ -293,12 +315,12 @@ public:
 	}
 
 	string getType() {
-	    if (checkTypeEqual(lhs, rhs, "double")) {
-	        return "double";
-	    }
-
         if (checkTypeEqual(lhs, rhs, "int")) {
             return "int";
+        }
+
+        if (checkTypeEqual(lhs, rhs, "double") || checkNumberTypeEqual(lhs, rhs)) {
+            return "double";
         }
 
 		return "(Unable to recognize this type)";
@@ -330,7 +352,10 @@ public:
             return false;
         }
 
-        if (!checkTypeEqual(lhs, rhs, "int") && !checkTypeEqual(lhs, rhs, "double")
+        if (!checkTypeEqual(lhs, rhs, "int")
+        && !checkTypeEqual(lhs, rhs, "double")
+        && !checkNumberTypeEqual(lhs, rhs)
+        && !checkNumberStringMatch(lhs, rhs)
         && !checkTypeEqual(lhs, rhs, "string")) {
             errorMessage(lhs, rhs, "+");
             return false;
@@ -347,13 +372,18 @@ public:
             return "int";
         }
 
-        if (checkTypeEqual(lhs, rhs, "double")) {
+        if (checkTypeEqual(lhs, rhs, "double") || checkNumberTypeEqual(lhs, rhs)) {
             return "double";
         }
 
         if (checkTypeEqual(lhs, rhs, "string")) {
             return "string";
         }
+
+        if(checkNumberStringMatch(lhs, rhs)) {
+            return "string";
+        }
+
         return "(Unable to recognize this type)";
 	}
 
@@ -383,7 +413,9 @@ public:
             return false;
         }
 
-        if (!checkTypeEqual(lhs, rhs, "double") || !checkTypeEqual(lhs, rhs, "int")) {
+        if (!checkTypeEqual(lhs, rhs, "double")
+        || !checkTypeEqual(lhs, rhs, "int")
+        || !checkNumberTypeEqual(lhs, rhs)) {
             errorMessage(lhs, rhs, "*");
             return false;
         }
@@ -395,13 +427,14 @@ public:
 	}
 
 	string getType() {
-        if (checkTypeEqual(lhs, rhs, "double")) {
-            return "double";
-        }
-
         if (checkTypeEqual(lhs, rhs, "int")) {
             return "int";
         }
+
+        if (checkTypeEqual(lhs, rhs, "double") || checkNumberTypeEqual(lhs, rhs)) {
+            return "double";
+        }
+
         return "(Unable to recognize this type)";
 	}
 
@@ -431,7 +464,9 @@ public:
             return false;
         }
 
-        if (!checkTypeEqual(lhs, rhs, "double") || !checkTypeEqual(lhs, rhs, "int")) {
+        if (!checkTypeEqual(lhs, rhs, "double")
+        || !checkTypeEqual(lhs, rhs, "int")
+        || !checkNumberTypeEqual(lhs, rhs)) {
             errorMessage(lhs, rhs, "/");
             return false;
         }
@@ -440,12 +475,12 @@ public:
 	};
 
 	string getType() {
-        if (checkTypeEqual(lhs, rhs, "double")) {
-            return "double";
+	    if (checkTypeEqual(lhs, rhs, "int")) {
+            return "int";
         }
 
-        if (checkTypeEqual(lhs, rhs, "int")) {
-            return "int";
+        if (checkTypeEqual(lhs, rhs, "double") || checkNumberTypeEqual(lhs, rhs)) {
+            return "double";
         }
 
         return "(Unable to recognize this type)";
@@ -480,8 +515,10 @@ public:
 			return false;
 		}
 
-		if (!checkTypeEqual(lhs, rhs, "double") && !checkTypeEqual(lhs, rhs, "int") &&
-		!checkTypeEqual(lhs, rhs, "string")) {
+		if (!checkTypeEqual(lhs, rhs, "double")
+		&& !checkTypeEqual(lhs, rhs, "int")
+		&& !checkNumberTypeEqual(lhs, rhs)
+		&& !checkTypeEqual(lhs, rhs, "string")) {
 			errorMessage(lhs, rhs, ">");
 			return false;
 		}
@@ -494,7 +531,9 @@ public:
 	}
 
 	string getType() {
-		if (checkTypeEqual(lhs, rhs, "int") || checkTypeEqual(lhs, rhs, "double")
+		if (checkTypeEqual(lhs, rhs, "int")
+		|| checkTypeEqual(lhs, rhs, "double")
+		|| checkNumberTypeEqual(lhs, rhs)
 		|| checkTypeEqual(lhs, rhs, "string")) {
 			return "boolean";
 		}
@@ -527,8 +566,10 @@ public:
 			return false;
 		}
 
-        if (!checkTypeEqual(lhs, rhs, "double") && !checkTypeEqual(lhs, rhs, "int") &&
-            !checkTypeEqual(lhs, rhs, "string")) {
+        if (!checkTypeEqual(lhs, rhs, "double")
+        && !checkTypeEqual(lhs, rhs, "int")
+        && !checkNumberTypeEqual(lhs, rhs)
+        && !checkTypeEqual(lhs, rhs, "string")) {
 			errorMessage(lhs, rhs, "<");
 			return false;
 		}
@@ -541,8 +582,10 @@ public:
 	}
 
 	string getType() {
-        if (checkTypeEqual(lhs, rhs, "int") || checkTypeEqual(lhs, rhs, "double")
-            || checkTypeEqual(lhs, rhs, "string")) {
+        if (checkTypeEqual(lhs, rhs, "int")
+        || checkTypeEqual(lhs, rhs, "double")
+        || checkNumberTypeEqual(lhs, rhs)
+        || checkTypeEqual(lhs, rhs, "string")) {
 			return "boolean";
 		}
 		return "(Unable to recognize this type)";
@@ -574,6 +617,9 @@ public:
 			return false;
 		}
 		if (lhs->getType() != rhs->getType()) {
+		    if(checkNumberTypeEqual(lhs, rhs)) {
+                return true;
+            }
 			errorMessage(lhs, rhs, "!=");
 			return false;
 		}
@@ -582,6 +628,10 @@ public:
 	};
 
 	string getType() {
+	    if(checkNumberTypeEqual(lhs, rhs)) {
+	        return "boolean";
+	    }
+
 		if (lhs->getType() == rhs->getType()) {
 			return "boolean";
 		}
@@ -664,6 +714,9 @@ public:
 			return false;
 		}
 		if (lhs->getType() != rhs->getType()) {
+		    if (checkNumberTypeEqual(lhs, rhs)) {
+		        return true;
+		    }
 			errorMessage(lhs, rhs, "==");
 			return false;
 		}
@@ -672,6 +725,10 @@ public:
 	};
 
 	string getType() {
+	    if (checkNumberTypeEqual(lhs, rhs)) {
+	        return "boolean";
+	    }
+
 		if (lhs->getType() == rhs->getType()) {
 			return "boolean";
 		}
@@ -749,9 +806,9 @@ public:
 		if (!child->check()) {
 			return false;
 		}
-		if (!(checkTypeEqual(child, "int") || checkTypeEqual(child, "double"))) {
-			errorMessage(child, "SUM");
-			return false;
+		if(!checkTypeEqual(child, "int") && !checkTypeEqual(child, "double")) {
+            errorMessage(child, "SUM");
+            return false;
 		}
 
 		return true;
@@ -795,10 +852,11 @@ public:
 		if (!child->check()) {
 			return false;
 		}
-        if (!(checkTypeEqual(child, "int") || checkTypeEqual(child, "double"))) {
-			errorMessage(child, "SUM");
-			return false;
-		}
+
+        if(!checkTypeEqual(child, "int") && !checkTypeEqual(child, "double")) {
+            errorMessage(child, "SUM");
+            return false;
+        }
 
 		return true;
 	};
