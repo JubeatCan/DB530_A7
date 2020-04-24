@@ -10,6 +10,7 @@
 #include "MyDB_Table.h"
 #include <string>
 #include <utility>
+#include <unordered_set>
 
 using namespace std;
 
@@ -17,7 +18,6 @@ using namespace std;
 /** HERE WE DEFINE ALL OF THE STRUCTS THAT ARE **/
 /** PASSED AROUND BY THE PARSER                **/
 /*************************************************/
-
 // structure that encapsulates a parsed computation that returns a value
 struct Value {
 
@@ -201,7 +201,7 @@ public:
 // structure that stores an entire SFW query
 struct SFWQuery {
 
-private:
+public:
 
 	// the various parts of the SQL query
 	vector <ExprTreePtr> valuesToSelect;
@@ -209,7 +209,7 @@ private:
 	vector <ExprTreePtr> allDisjunctions;
 	vector <ExprTreePtr> groupingClauses;
 
-public:
+
 	SFWQuery () {}
 
 	SFWQuery (struct ValueList *selectClause, struct FromList *fromClause, 
@@ -252,6 +252,67 @@ public:
 		for (auto a : groupingClauses) {
 			cout << "\t" << a->toString () << "\n";
 		}
+	}
+
+	bool check() {
+		ExprTree::groups = groupingClauses;
+		// Tables (first is tableName, second is aliasName)
+		ExprTree::tables = tablesToProcess;
+
+		vector<string> tables;
+		ExprTree::catalogPtr->getStringList("tables", tables);
+		unordered_set<string> s_tables(tables.begin(), tables.end());
+		// First to check if table exists
+		for (auto t : tablesToProcess) {
+			if (s_tables.find(t.first) == s_tables.end()) {
+				cerr << "Cannot find table: " << t.first << endl;
+				return false;
+			}
+		}
+
+		// Second check group and select
+		if (groupingClauses.empty()) {
+			for (auto v : valuesToSelect) {
+				if (!v->check()) {
+					cerr << "Something about select triggers errors." << endl;
+					return false;
+				}
+			}
+		} else {
+			unordered_set<string> s_group;
+			for (auto g : groupingClauses) {
+				if (!g->check()) {
+					cerr << "Something about grouping triggers errors." << endl;
+					return false;
+				}
+				s_group.insert(g->toString());
+			}
+			for (auto v : valuesToSelect) {
+				if (!v->check()) {
+					cerr << "Something about select triggers errors." << endl;
+					return false;
+				}
+			}
+			for (auto v : valuesToSelect) {
+				if (v->toString().substr(0,3) == "sum" || v->toString().substr(0,3) == "avg") {
+					continue;
+				}
+				if (s_group.find(v->toString()) == s_group.end()) {
+					cerr << "Cannot match select " << v->toString() << " with grouping." << endl;
+					return false;
+				}
+			}
+		}
+
+		// Third check disjoint
+		for (auto d : allDisjunctions) {
+			if (!d->check()) {
+				cerr << "Something about disjunctions triggers errors." << endl;
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	#include "FriendDecls.h"
@@ -297,6 +358,15 @@ public:
 	
 	void printSFWQuery () {
 		myQuery.print ();
+	}
+
+	bool checkSFWQuery(MyDB_CatalogPtr cPtr) {
+		ExprTree::catalogPtr = cPtr;
+		return myQuery.check();
+	}
+
+	SFWQuery getSFWQuery() {
+		return myQuery;
 	}
 
 	#include "FriendDecls.h"

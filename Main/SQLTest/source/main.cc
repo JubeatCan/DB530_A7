@@ -5,6 +5,7 @@
 #include "MyDB_BufferManager.h"
 #include "MyDB_TableReaderWriter.h"
 #include "MyDB_BPlusTreeReaderWriter.h"
+#include "RunOp.h"
 #include <string>      
 #include <iostream>   
 #include <sstream>
@@ -12,6 +13,11 @@
 #include <iterator>
 
 using namespace std;
+
+MyDB_CatalogPtr ExprTree::catalogPtr = nullptr;
+vector<pair<string, string>> ExprTree::tables(0);
+vector<ExprTreePtr> ExprTree::groups(0);
+
 string toLower (string data) {
 	transform(data.begin(), data.end(), data.begin(), ::tolower);
 	return data;
@@ -163,11 +169,17 @@ int main (int numArgs, char **args) {
 					} else if (final->isSFWQuery ()) {
 
 						// print it out
+						cout << "start printing" << endl;
 						final->printSFWQuery ();
-
+						cout << "print finished" << endl;
+						cout << "start checking" << endl;
+						final->checkSFWQuery(myCatalog);
 						// Build and Optimize the query
-						
-						
+						cout << "check finished" << endl;
+						cout << "start running" << endl;
+						RunOp r(final, myMgr, allTableReaderWriters, myCatalog);
+						r.run();
+						cout << "run finished" << endl;
 					}
 
 					// get outta here
