@@ -38,18 +38,18 @@ public:
 	}
 
 	bool checkNumberTypeEqual(ExprTreePtr lhs, ExprTreePtr rhs) {
-	    return (lhs->getType() == "double" && rhs->getType() == 'int') ||
-                (lhs->getType() == "int" && rhs->getType() == 'double')
+	    return (lhs->getType() == "double" && rhs->getType() == "int") ||
+                (lhs->getType() == "int" && rhs->getType() == "double");
     }
 
     bool checkNumberStringMatch(ExprTreePtr lhs, ExprTreePtr rhs) {
 	    if(lhs->getType() == "string") {
-	        if(rhs->getType() == "double" || rhs->getType == "int"){
+	        if(rhs->getType() == "double" || rhs->getType() == "int"){
 	            return true;
 	        }
 	    }
 	    if(rhs->getType() == "string") {
-            if(lhs->getType() == "double" || lhs->getType == "int"){
+            if(lhs->getType() == "double" || lhs->getType() == "int"){
                 return true;
             }
 	    }
@@ -70,6 +70,10 @@ public:
 		cerr << "This operator \'" << opr << "\' cannot be used on "
 			<< opn->toString() << "." << endl;
 	}
+
+	virtual ExprTreePtr getlhs() = 0;
+	virtual ExprTreePtr getrhs() = 0;
+
 };
 
 class BoolLiteral : public ExprTree {
@@ -101,6 +105,13 @@ public:
 	pair<string, MyDB_AttTypePtr> getAttSchema () {
 		return make_pair("", make_shared<MyDB_BoolAttType>());
 	}
+
+	 ExprTreePtr getlhs() {
+		 return nullptr;
+	 }
+	 ExprTreePtr getrhs() {
+		 return nullptr;
+	 }
 };
 
 class DoubleLiteral : public ExprTree {
@@ -128,6 +139,12 @@ public:
 	pair<string, MyDB_AttTypePtr> getAttSchema () {
 		return make_pair("", make_shared<MyDB_DoubleAttType>());
 	}
+	ExprTreePtr getlhs() {
+		 return nullptr;
+	 }
+	 ExprTreePtr getrhs() {
+		 return nullptr;
+	 }
 
 	~DoubleLiteral () {}
 };
@@ -158,6 +175,12 @@ public:
 	pair<string, MyDB_AttTypePtr> getAttSchema () {
 		return make_pair("", make_shared<MyDB_IntAttType>());
 	}
+	ExprTreePtr getlhs() {
+		 return nullptr;
+	 }
+	 ExprTreePtr getrhs() {
+		 return nullptr;
+	 }
 
 	~IntLiteral () {}
 };
@@ -188,6 +211,12 @@ public:
 	pair<string, MyDB_AttTypePtr> getAttSchema () {
 		return make_pair("", make_shared<MyDB_StringAttType>());
 	}
+	ExprTreePtr getlhs() {
+		 return nullptr;
+	 }
+	 ExprTreePtr getrhs() {
+		 return nullptr;
+	 }
 
 	~StringLiteral () {}
 };
@@ -255,12 +284,18 @@ public:
 		if (attType == "int")
 			return "int";
 		if (attType == "double")
-		    return "double"
+		    return "double";
 		if (attType == "string")
 			return "string";
 		return "(Unable to recognize this type)";
 		
 	}
+	ExprTreePtr getlhs() {
+		 return nullptr;
+	 }
+	 ExprTreePtr getrhs() {
+		 return nullptr;
+	 }
 
 	pair<string, MyDB_AttTypePtr> getAttSchema () {
 		if (attType == "bool") {
@@ -301,17 +336,23 @@ public:
 	        return false;
 	    }
 
-	    if (!checkTypeEqual(lhs, rhs, "double")
-	    || !checkTypeEqual(lhs, rhs, "int")
-	    || !checkNumberTypeEqual(lhs, rhs)) {
-	        errorMessage(lhs, rhs, "-");
-	        return false;
-	    }
+	    // if (!checkTypeEqual(lhs, rhs, "double")
+	    // || !checkTypeEqual(lhs, rhs, "int")
+	    // || !checkNumberTypeEqual(lhs, rhs)) {
+	    //     errorMessage(lhs, rhs, "-");
+	    //     return false;
+	    // }
 		return true;
 	};
 	
 	pair<string, MyDB_AttTypePtr> getAttSchema () {
-		return lhs->getAttSchema();
+		if (getType() == "int") {
+			return make_pair("", make_shared<MyDB_IntAttType>());
+		} else if (getType() == "double") {
+			return make_pair("", make_shared<MyDB_DoubleAttType>());
+		} else {
+			return make_pair("", make_shared<MyDB_DoubleAttType>());
+		}
 	}
 
 	string getType() {
@@ -325,6 +366,12 @@ public:
 
 		return "(Unable to recognize this type)";
 	}
+	ExprTreePtr getlhs() {
+		 return lhs;
+	 }
+	 ExprTreePtr getrhs() {
+		 return rhs;
+	 }
 
 	~MinusOp () {}
 };
@@ -364,8 +411,22 @@ public:
 		return true;
 	};
 	pair<string, MyDB_AttTypePtr> getAttSchema () {
-		return make_pair("", make_shared<MyDB_DoubleAttType>());
+		string x = getType();
+		if (x == "int") {
+			return make_pair("", make_shared<MyDB_IntAttType>());
+		} else if (x == "double") {
+			return make_pair("", make_shared<MyDB_DoubleAttType>());
+		} else {
+			return make_pair("sp", make_shared<MyDB_StringAttType>());
+		}
 	}
+
+	ExprTreePtr getlhs() {
+		 return lhs;
+	 }
+	 ExprTreePtr getrhs() {
+		 return rhs;
+	 }
 
 	string getType() {
         if (checkTypeEqual(lhs, rhs, "int")) {
@@ -413,17 +474,29 @@ public:
             return false;
         }
 
-        if (!checkTypeEqual(lhs, rhs, "double")
-        || !checkTypeEqual(lhs, rhs, "int")
-        || !checkNumberTypeEqual(lhs, rhs)) {
-            errorMessage(lhs, rhs, "*");
-            return false;
-        }
+        // if (!checkTypeEqual(lhs, rhs, "double")
+        // || !checkTypeEqual(lhs, rhs, "int")
+        // || !checkNumberTypeEqual(lhs, rhs)) {
+        //     errorMessage(lhs, rhs, "*");
+        //     return false;
+        // }
 
         return true;
 	};
+
+	ExprTreePtr getlhs() {
+		 return lhs;
+	 }
+	 ExprTreePtr getrhs() {
+		 return rhs;
+	 }
 	pair<string, MyDB_AttTypePtr> getAttSchema () {
-		return lhs->getAttSchema();
+		string x = getType();
+		if (x == "int") {
+			return make_pair("", make_shared<MyDB_IntAttType>());
+		} else {
+			return make_pair("", make_shared<MyDB_DoubleAttType>());
+		}
 	}
 
 	string getType() {
@@ -459,17 +532,24 @@ public:
 		return "/ (" + lhs->toString () + ", " + rhs->toString () + ")";
 	}	
 
+	ExprTreePtr getlhs() {
+		 return lhs;
+	 }
+	 ExprTreePtr getrhs() {
+		 return rhs;
+	 }
+
 	bool check() {
         if (!lhs->check() || !rhs->check()) {
             return false;
         }
 
-        if (!checkTypeEqual(lhs, rhs, "double")
-        || !checkTypeEqual(lhs, rhs, "int")
-        || !checkNumberTypeEqual(lhs, rhs)) {
-            errorMessage(lhs, rhs, "/");
-            return false;
-        }
+        // if (!checkTypeEqual(lhs, rhs, "double")
+        // && !checkTypeEqual(lhs, rhs, "int")
+        // && !checkNumberTypeEqual(lhs, rhs)) {
+        //     errorMessage(lhs, rhs, "/");
+        //     return false;
+        // }
 
         return true;
 	};
@@ -486,7 +566,11 @@ public:
         return "(Unable to recognize this type)";
 	}
 	pair<string, MyDB_AttTypePtr> getAttSchema () {
-		return lhs->getAttSchema();
+		if (getType() == "int") {
+			return make_pair("", make_shared<MyDB_IntAttType>());
+		} else {
+			return make_pair("", make_shared<MyDB_DoubleAttType>());
+		}
 	}
 
 	~DivideOp () {}
@@ -501,6 +585,12 @@ private:
 	
 public:
 
+	ExprTreePtr getlhs() {
+		 return lhs;
+	 }
+	 ExprTreePtr getrhs() {
+		 return rhs;
+	 }
 	GtOp (ExprTreePtr lhsIn, ExprTreePtr rhsIn) {
 		lhs = lhsIn;
 		rhs = rhsIn;
@@ -556,6 +646,12 @@ public:
 		lhs = lhsIn;
 		rhs = rhsIn;
 	}
+	ExprTreePtr getlhs() {
+		 return lhs;
+	 }
+	 ExprTreePtr getrhs() {
+		 return rhs;
+	 }
 
 	string toString () {
 		return "< (" + lhs->toString () + ", " + rhs->toString () + ")";
@@ -607,6 +703,12 @@ public:
 		lhs = lhsIn;
 		rhs = rhsIn;
 	}
+	ExprTreePtr getlhs() {
+		 return lhs;
+	 }
+	 ExprTreePtr getrhs() {
+		 return rhs;
+	 }
 
 	string toString () {
 		return "!= (" + lhs->toString () + ", " + rhs->toString () + ")";
@@ -659,6 +761,12 @@ public:
 		lhs = lhsIn;
 		rhs = rhsIn;
 	}
+	ExprTreePtr getlhs() {
+		 return lhs;
+	 }
+	 ExprTreePtr getrhs() {
+		 return rhs;
+	 }
 
 	string toString () {
 		return "|| (" + lhs->toString () + ", " + rhs->toString () + ")";
@@ -704,6 +812,12 @@ public:
 		lhs = lhsIn;
 		rhs = rhsIn;
 	}
+	ExprTreePtr getlhs() {
+		 return lhs;
+	 }
+	 ExprTreePtr getrhs() {
+		 return rhs;
+	 }
 
 	string toString () {
 		return "== (" + lhs->toString () + ", " + rhs->toString () + ")";
@@ -754,6 +868,12 @@ public:
 	NotOp (ExprTreePtr childIn) {
 		child = childIn;
 	}
+	ExprTreePtr getlhs() {
+		 return nullptr;
+	 }
+	 ExprTreePtr getrhs() {
+		 return nullptr;
+	 }
 
 	string toString () {
 		return "!(" + child->toString () + ")";
@@ -802,14 +922,20 @@ public:
 		return "sum(" + child->toString () + ")";
 	}	
 
+	ExprTreePtr getlhs() {
+		 return nullptr;
+	 }
+	 ExprTreePtr getrhs() {
+		 return nullptr;
+	 }
 	bool check() {
 		if (!child->check()) {
 			return false;
 		}
-		if(!checkTypeEqual(child, "int") && !checkTypeEqual(child, "double")) {
-            errorMessage(child, "SUM");
-            return false;
-		}
+		// if(!checkTypeEqual(child, "int") && !checkTypeEqual(child, "double") && !checkNumberTypeEqual(lhs, rhs)) {
+        //     errorMessage(child, "SUM");
+        //     return false;
+		// }
 
 		return true;
 	};
@@ -826,7 +952,12 @@ public:
 	}
 
 	pair<string, MyDB_AttTypePtr> getAttSchema () {
-		return make_pair("sum", make_shared <MyDB_DoubleAttType>());
+		string x = getType();
+		if (x == "int") {
+			return make_pair("sum", make_shared <MyDB_IntAttType>());
+		} else {
+			return make_pair("sum", make_shared <MyDB_DoubleAttType>());
+		}
 	}
 
 	~SumOp () {}
@@ -843,6 +974,12 @@ public:
 	AvgOp (ExprTreePtr childIn) {
 		child = childIn;
 	}
+	ExprTreePtr getlhs() {
+		 return nullptr;
+	 }
+	 ExprTreePtr getrhs() {
+		 return nullptr;
+	 }
 
 	string toString () {
 		return "avg(" + child->toString () + ")";
