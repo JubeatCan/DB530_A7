@@ -15,10 +15,11 @@ private:
     vector<pair<MyDB_AggType, string>> aggsToCompute;
     vector<string> projection;
     MyDB_SchemaPtr schemaOut;
-    // MyDB_SchemaPtr schemaSp;
+    MyDB_SchemaPtr schemaSp;
     MyDB_CatalogPtr cata;
     bool isAgg;
-    // bool sp;
+    bool sp;
+    int rem;
 
 public:
     RunOp(SQLStatement *query, MyDB_BufferManagerPtr buffer,

@@ -3,72 +3,62 @@
 RunOp::RunOp(SQLStatement *query, MyDB_BufferManagerPtr buffer,
         map<string, MyDB_TableReaderWriterPtr> tables, MyDB_CatalogPtr catalog)
 {
+    rem = 0;
     this->query = query->getSFWQuery();
     this->buffer = buffer;
     this->tables = tables;
     this->schemaOut = make_shared<MyDB_Schema> ();
-    // this->schemaSp = make_shared<MyDB_Schema> ();
+    this->schemaSp = make_shared<MyDB_Schema> ();
     this->cata = catalog;
     // this->sp = false;
     // vector<string> projectSp;
+    int count = 0;
     for (auto s : this->query.valuesToSelect) {
         
         // if (s->getAttSchema().first != "sp") {
-            schemaOut->appendAtt(s->getAttSchema());
+            schemaOut->appendAtt(s->getAttSchema(to_string(count)));
             projection.push_back(s->toString());
         // }
-        // schemaSp->appendAtt(s->getAttSchema());
+        schemaSp->appendAtt(s->getAttSchema(to_string(count)));
         // cout << s->toString() << endl;
 
-        if (s->getAttSchema().first == "sum") {
+        if (s->getAttSchema(to_string(count)).first.substr(0,3) == "sum") {
             aggsToCompute.push_back(make_pair(MyDB_AggType::sumA, s->toString().substr(3)));
             // projectSp.push_back("sum");
-        } else if (s->getAttSchema().first == "avg") {
+        } else if (s->getAttSchema(to_string(count)).first.substr(0,3) == "avg") {
             aggsToCompute.push_back(make_pair(MyDB_AggType::avgA, s->toString().substr(3)));
             // projectSp.push_back("avg");
         } else {
             groupings.push_back(s->toString());
             // projectSp.push_back(s->toString());
+            // this->sp = true;
+            // auto& atts = schemaOut->getAtts();
+            // atts.insert(atts.begin(), s->getAttSchema(to_string(count)));
+            // atts.pop_back();
+            rem = count;
         }
 
-        // if (s->getAttSchema().first == "sp") {
-        //     // this->sp = true;
-            
-        //     string x, n;
-        //     cout << s->toString() << endl;
-        //     cout << s->getlhs()->getType() << endl;
-        //     cout << s->getrhs()->getType() << endl;
-        //     if (s->getlhs()->getType() == "string") {
-        //         x = s->getrhs()->getType();
-        //         n = s->getrhs()->toString();
-        //     } else {
-        //         x = s->getlhs()->getType();
-        //         n = s->getlhs()->toString();
-        //     }
-            
-        //     if (x == "int") {
-        //         schemaOut->appendAtt(make_pair(n,make_shared<MyDB_IntAttType>()));
-        //     } else if (x == "double") {
-        //         schemaOut->appendAtt(make_pair(n,make_shared<MyDB_DoubleAttType>()));
-        //     } else {
-        //         schemaOut->appendAtt(make_pair(n,make_shared<MyDB_StringAttType>()));
-        //     }
-
-        //     groupings.pop_back();
-        //     groupings.push_back(n);
-        // }
+        count++;
 
     }
     if (aggsToCompute.empty()) {
         this->isAgg = false;
+        // this->sp = false;
+        // auto& atts = schemaOut->getAtts();
+        // vector<pair<string, MyDB_AttTypePtr>> sch(schemaOut->getAtts());
+        // atts.erase(atts.begin());
+        // atts.emplace(rem+atts.begin(), sch[0]);
     } else {
         this->isAgg = true;
+        if (!groupings.empty()) {
+            this->sp = true;
+            vector<pair<string, MyDB_AttTypePtr>> sch(schemaOut->getAtts());
+            auto& atts = schemaOut->getAtts();
+            atts.erase(atts.begin()+rem);
+            atts.emplace(atts.begin(), sch[rem]);
+        }
+        
     }
-
-    // if (sp) {
-    //     projection = projectSp;
-    // }
-
 }
 
 MyDB_TableReaderWriterPtr RunOp::copyyyy(MyDB_TableReaderWriterPtr input, string alias, string name) {
@@ -126,7 +116,7 @@ void RunOp::run() {
     }
 
     //Output
-    // if (!sp) {
+    if (!sp) {
         int count = 0;
         MyDB_RecordPtr recOut = output->getEmptyRecord();
         MyDB_RecordIteratorAltPtr it = output->getIteratorAlt();
@@ -140,25 +130,63 @@ void RunOp::run() {
             }
         }
         printf("Count Result: %d records.\n", count);
-    // } else {
-    //     MyDB_TablePtr outputTableSp = make_shared<MyDB_Table>("outputSp", "outputSp.bin", schemaSp);
-    //     MyDB_TableReaderWriterPtr outputSp = make_shared<MyDB_TableReaderWriter>(outputTableSp, buffer);
-    //     RegularSelection opSp(output, outputSp, "", projection);
+        // for (auto m : projection) {
+        //     cout << m << " ";
+        // }
+    } else {
+        int count = 0;
+        // MyDB_RecordPtr recOut = output->getEmptyRecord();
+        // MyDB_RecordIteratorAltPtr it = output->getIteratorAlt();
 
-    //     int count = 0;
-    //     MyDB_RecordPtr recOut = outputSp->getEmptyRecord();
-    //     MyDB_RecordIteratorAltPtr it = outputSp->getIteratorAlt();
+        // printf("----------------Results Below---------------\n");
+        // while (it->advance()) {
+        //     it->getCurrent(recOut);
+        //     ++count;
+        //     if (count <= 30) {
+        //         cout << recOut << endl;
+        //     }
+        // }
+        // for (auto m : output->getTable()->getSchema()->getAtts()) {
+        //     cout << m.first << " ";
+        // }
+        // printf("Count Result: %d records.\n", count);
 
-    //     printf("----------------Results Below---------------\n");
-    //     while (it->advance()) {
-    //         it->getCurrent(recOut);
-    //         ++count;
-    //         if (count <= 30) {
-    //             cout << recOut << endl;
-    //         }
-    //     }
-    //     printf("Count Result: %d records.\n", count);
-    // }
+        MyDB_TablePtr outputTableSp = make_shared<MyDB_Table>("outputSp", "outputSp.bin", schemaSp);
+        MyDB_TableReaderWriterPtr outputSp = make_shared<MyDB_TableReaderWriter>(outputTableSp, buffer);
+        vector<string> projectionSp;
+
+        // for (auto m : schemaOut->getAtts()) {
+        //     cout << m.first << " ";
+        // }
+        // cout << endl;
+        
+        for (auto m : schemaSp->getAtts()) {
+            projectionSp.push_back("["+m.first+"]");
+            // cout << m.first << " ";
+        }
+        // cout << endl;
+
+        // for (auto m : projection) {
+        //     cout << m << " ";
+        // }
+        // cout << endl;
+
+        RegularSelection opSp(output, outputSp, "== (string[T], string[T])", projectionSp);
+        opSp.run();
+        count = 0;
+        MyDB_RecordPtr recOutt = outputSp->getEmptyRecord();
+        MyDB_RecordIteratorAltPtr itt = outputSp->getIteratorAlt();
+
+        printf("----------------Results Below---------------\n");
+        while (itt->advance()) {
+            itt->getCurrent(recOutt);
+            ++count;
+            if (count <= 30) {
+                cout << recOutt << endl;
+            }
+        }
+        printf("Count Result: %d records.\n", count);
+    }
     
 
 }

@@ -31,7 +31,7 @@ public:
 	// To help with type check
 	// Lookup Table: "number" "boolean" "string" "(Unable to recognize this type)"
 	virtual string getType() = 0;
-	virtual pair<string, MyDB_AttTypePtr> getAttSchema () = 0;
+	virtual pair<string, MyDB_AttTypePtr> getAttSchema (string name) = 0;
 
 	bool checkTypeEqual(ExprTreePtr lhs, ExprTreePtr rhs, string type) {
 		return (lhs->getType() == type && rhs->getType() == type) ? true : false;
@@ -102,8 +102,8 @@ public:
 		return "boolean";
 	}
 
-	pair<string, MyDB_AttTypePtr> getAttSchema () {
-		return make_pair("", make_shared<MyDB_BoolAttType>());
+	pair<string, MyDB_AttTypePtr> getAttSchema (string name) {
+		return make_pair(name, make_shared<MyDB_BoolAttType>());
 	}
 
 	 ExprTreePtr getlhs() {
@@ -136,8 +136,8 @@ public:
 		return "double";
 	}
 
-	pair<string, MyDB_AttTypePtr> getAttSchema () {
-		return make_pair("", make_shared<MyDB_DoubleAttType>());
+	pair<string, MyDB_AttTypePtr> getAttSchema (string name) {
+		return make_pair(name, make_shared<MyDB_DoubleAttType>());
 	}
 	ExprTreePtr getlhs() {
 		 return nullptr;
@@ -172,8 +172,8 @@ public:
 		return "int";
 	}
 
-	pair<string, MyDB_AttTypePtr> getAttSchema () {
-		return make_pair("", make_shared<MyDB_IntAttType>());
+	pair<string, MyDB_AttTypePtr> getAttSchema (string name) {
+		return make_pair(name, make_shared<MyDB_IntAttType>());
 	}
 	ExprTreePtr getlhs() {
 		 return nullptr;
@@ -208,8 +208,8 @@ public:
 		return "string";
 	}
 
-	pair<string, MyDB_AttTypePtr> getAttSchema () {
-		return make_pair("", make_shared<MyDB_StringAttType>());
+	pair<string, MyDB_AttTypePtr> getAttSchema (string name) {
+		return make_pair(name, make_shared<MyDB_StringAttType>());
 	}
 	ExprTreePtr getlhs() {
 		 return nullptr;
@@ -297,17 +297,17 @@ public:
 		 return nullptr;
 	 }
 
-	pair<string, MyDB_AttTypePtr> getAttSchema () {
+	pair<string, MyDB_AttTypePtr> getAttSchema (string name) {
 		if (attType == "bool") {
-			return make_pair("[" + attName + "]", make_shared<MyDB_BoolAttType>());
+			return make_pair("[" + attName + "]"+name, make_shared<MyDB_BoolAttType>());
 		} else if (attType == "string") {
-			return make_pair("[" + attName + "]", make_shared<MyDB_StringAttType>());
+			return make_pair("[" + attName + "]"+name, make_shared<MyDB_StringAttType>());
 		} else if (attType == "int") {
-			return make_pair("[" + attName + "]", make_shared<MyDB_IntAttType>());
+			return make_pair("[" + attName + "]"+name, make_shared<MyDB_IntAttType>());
 		} else if (attType == "double") {
-			return make_pair("[" + attName + "]", make_shared<MyDB_DoubleAttType>());
+			return make_pair("[" + attName + "]"+name, make_shared<MyDB_DoubleAttType>());
 		}
-		return make_pair("[" + attName + "]", make_shared<MyDB_BoolAttType>());
+		return make_pair("[" + attName + "]"+name, make_shared<MyDB_BoolAttType>());
 	}
 
 	~Identifier () {}
@@ -345,13 +345,13 @@ public:
 		return true;
 	};
 	
-	pair<string, MyDB_AttTypePtr> getAttSchema () {
+	pair<string, MyDB_AttTypePtr> getAttSchema (string name) {
 		if (getType() == "int") {
-			return make_pair("", make_shared<MyDB_IntAttType>());
+			return make_pair(name, make_shared<MyDB_IntAttType>());
 		} else if (getType() == "double") {
-			return make_pair("", make_shared<MyDB_DoubleAttType>());
+			return make_pair(name, make_shared<MyDB_DoubleAttType>());
 		} else {
-			return make_pair("", make_shared<MyDB_DoubleAttType>());
+			return make_pair(name, make_shared<MyDB_DoubleAttType>());
 		}
 	}
 
@@ -410,14 +410,14 @@ public:
 
 		return true;
 	};
-	pair<string, MyDB_AttTypePtr> getAttSchema () {
+	pair<string, MyDB_AttTypePtr> getAttSchema (string name) {
 		string x = getType();
 		if (x == "int") {
-			return make_pair("", make_shared<MyDB_IntAttType>());
+			return make_pair(name, make_shared<MyDB_IntAttType>());
 		} else if (x == "double") {
-			return make_pair("", make_shared<MyDB_DoubleAttType>());
+			return make_pair(name, make_shared<MyDB_DoubleAttType>());
 		} else {
-			return make_pair("sp", make_shared<MyDB_StringAttType>());
+			return make_pair("sp"+name, make_shared<MyDB_StringAttType>());
 		}
 	}
 
@@ -490,12 +490,12 @@ public:
 	 ExprTreePtr getrhs() {
 		 return rhs;
 	 }
-	pair<string, MyDB_AttTypePtr> getAttSchema () {
+	pair<string, MyDB_AttTypePtr> getAttSchema (string name) {
 		string x = getType();
 		if (x == "int") {
-			return make_pair("", make_shared<MyDB_IntAttType>());
+			return make_pair(name, make_shared<MyDB_IntAttType>());
 		} else {
-			return make_pair("", make_shared<MyDB_DoubleAttType>());
+			return make_pair(name, make_shared<MyDB_DoubleAttType>());
 		}
 	}
 
@@ -565,11 +565,11 @@ public:
 
         return "(Unable to recognize this type)";
 	}
-	pair<string, MyDB_AttTypePtr> getAttSchema () {
+	pair<string, MyDB_AttTypePtr> getAttSchema (string name) {
 		if (getType() == "int") {
-			return make_pair("", make_shared<MyDB_IntAttType>());
+			return make_pair(name, make_shared<MyDB_IntAttType>());
 		} else {
-			return make_pair("", make_shared<MyDB_DoubleAttType>());
+			return make_pair(name, make_shared<MyDB_DoubleAttType>());
 		}
 	}
 
@@ -616,8 +616,8 @@ public:
 		return true;
 	};
 
-	pair<string, MyDB_AttTypePtr> getAttSchema () {
-		return make_pair("", make_shared <MyDB_BoolAttType>());
+	pair<string, MyDB_AttTypePtr> getAttSchema (string name) {
+		return make_pair(name, make_shared <MyDB_BoolAttType>());
 	}
 
 	string getType() {
@@ -673,8 +673,8 @@ public:
 		return true;
 	};
 
-	pair<string, MyDB_AttTypePtr> getAttSchema () {
-		return make_pair("", make_shared <MyDB_BoolAttType>());
+	pair<string, MyDB_AttTypePtr> getAttSchema (string name) {
+		return make_pair(name, make_shared <MyDB_BoolAttType>());
 	}
 
 	string getType() {
@@ -741,8 +741,8 @@ public:
 		return "(Unable to recognize this type)";
 	}
 
-	pair<string, MyDB_AttTypePtr> getAttSchema () {
-		return make_pair("", make_shared <MyDB_BoolAttType>());
+	pair<string, MyDB_AttTypePtr> getAttSchema (string name) {
+		return make_pair(name, make_shared <MyDB_BoolAttType>());
 	}
 
 	~NeqOp () {}
@@ -792,8 +792,8 @@ public:
 		return "(Unable to recognize this type)";
 	}
 
-	pair<string, MyDB_AttTypePtr> getAttSchema () {
-		return make_pair("", make_shared <MyDB_BoolAttType>());
+	pair<string, MyDB_AttTypePtr> getAttSchema (string name) {
+		return make_pair(name, make_shared <MyDB_BoolAttType>());
 	}
 
 	~OrOp () {}
@@ -850,8 +850,8 @@ public:
 		return "(Unable to recognize this type)";
 	}
 
-	pair<string, MyDB_AttTypePtr> getAttSchema () {
-		return make_pair("", make_shared <MyDB_BoolAttType>());
+	pair<string, MyDB_AttTypePtr> getAttSchema (string name) {
+		return make_pair(name, make_shared <MyDB_BoolAttType>());
 	}
 
 	~EqOp () {}
@@ -899,8 +899,8 @@ public:
 		return "(Unable to recognize this type)";
 	}
 
-	pair<string, MyDB_AttTypePtr> getAttSchema () {
-		return make_pair("", make_shared <MyDB_BoolAttType>());
+	pair<string, MyDB_AttTypePtr> getAttSchema (string name) {
+		return make_pair(name, make_shared <MyDB_BoolAttType>());
 	}
 
 	~NotOp () {}
@@ -951,12 +951,12 @@ public:
 		return "(Unable to recognize this type)";
 	}
 
-	pair<string, MyDB_AttTypePtr> getAttSchema () {
+	pair<string, MyDB_AttTypePtr> getAttSchema (string name) {
 		string x = getType();
 		if (x == "int") {
-			return make_pair("sum", make_shared <MyDB_IntAttType>());
+			return make_pair("sum"+name, make_shared <MyDB_IntAttType>());
 		} else {
-			return make_pair("sum", make_shared <MyDB_DoubleAttType>());
+			return make_pair("sum"+name, make_shared <MyDB_DoubleAttType>());
 		}
 	}
 
@@ -1009,8 +1009,8 @@ public:
 		return "(Unable to recognize this type)";
 	}
 
-	pair<string, MyDB_AttTypePtr> getAttSchema () {
-		return make_pair("avg", make_shared <MyDB_DoubleAttType>());
+	pair<string, MyDB_AttTypePtr> getAttSchema (string name) {
+		return make_pair("avg"+name, make_shared <MyDB_DoubleAttType>());
 	}
 
 	~AvgOp () {}
